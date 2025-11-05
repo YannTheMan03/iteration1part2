@@ -67,9 +67,6 @@ namespace iteration1
         {
             InitializeComponent();
             ChangeBackground();
-
-            _currentWave = new wave_One();
-            _currentWave.Initialize();
         }
 
         // Change Background Image
@@ -195,18 +192,6 @@ namespace iteration1
             // Update bullet positions
             foreach (Bullet bullet in _bullets) bullet.PositionY += BulletVelocity;
 
-
-            ////// DELETE FOR NOW
-            /*
-             * 
-             */
-            // Spawn Enemies
-            if ((DateTime.Now - _lastSpawnTime).TotalMilliseconds >= SpawnDelay)
-            {
-                Enemy newEnemy = _currentWave.SpawnEnemy();
-                if (newEnemy != null) _enemies.Add(newEnemy);
-                _lastSpawnTime = DateTime.Now;
-            }
 
             // Collision Checking
             foreach(Bullet bullet in _bullets)

@@ -19,6 +19,7 @@ namespace iteration1
         {
             EnemyHealth = enemyHealth;
         }
+        // Work on this.
         public bool IsDead
         {
             get { return EnemyHealth <= 0; }
