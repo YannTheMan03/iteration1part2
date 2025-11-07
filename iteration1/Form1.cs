@@ -87,7 +87,7 @@ namespace iteration1
         {
             // Formatting Screen
             this.Size = new System.Drawing.Size(400, 600);
-            this.MaximizeBox = false;
+            this.MaximizeBox = true;
             this.MinimizeBox = false;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.DoubleBuffered = true;
@@ -172,7 +172,16 @@ namespace iteration1
             }
 
             // Draw Enemies
-            currentWave?.Draw(e.Graphics);
+            foreach (var enemy in currentWave.enemies.ToList())
+            {
+                if ((enemy.HitBox.IntersectsWith(_player.HitBox))||(enemy.PositionY >550))
+                {
+                    currentWave.enemies.Remove(enemy);
+                    _playerLivesLeft -= 1;
+                }
+                currentWave?.Draw(e.Graphics);
+            }
+           
 
 
 
@@ -193,6 +202,12 @@ namespace iteration1
             // Update bullet positions
             foreach (Bullet bullet in _bullets) bullet.PositionY += BulletVelocity;
 
+            // End game
+            if (_playerLivesLeft <= 0)
+            {
+                game_Timer.Stop();
+                GameOver();
+            }
 
             // Collision Checking
             
