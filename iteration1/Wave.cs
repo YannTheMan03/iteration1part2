@@ -10,6 +10,12 @@ namespace iteration1
     /// <summary>
     /// Wave class to create each individual wave on the screen.
     /// </summary>
+    /// 
+    public enum Direction
+    {
+        Left = -1,
+        Right = 1
+    }
     public class Wave
     {
         // Protected variables
@@ -18,42 +24,32 @@ namespace iteration1
         protected int _rowCount = 0;
         public List<Enemy> enemies { get; private set; }
 
+        // Private variables
+        private Direction _moveDirection = Direction.Right;
+        private int _speed = 1;      
+        private int _stepDown = 20; 
+        private int _screenWidth = 400; 
 
 
+
+        // Choosing the wave
         public Wave(int waveNumber)
         {
             switch (waveNumber)
             {
-                case 1:
-                    _enemyCount = 4;
-                    _rowCount = 1;
-                    break;
-                case 2:
-                    _enemyCount = 8;
-                    _rowCount = 2;
-                    break;
-                case 3:
-                    _enemyCount = 12;
-                    _rowCount = 3;
-                    break;
-                case 4:
-                    _enemyCount = 16;
-                    _rowCount = 4;
-                    break;
-                case 5:
-                    _enemyCount = 20;
-                    _rowCount = 5;
-                    break;
-                default:
-                    _enemyCount = 4;
-                    _rowCount = 1;
-                    break;
+                case 1: _enemyCount = 4; _rowCount = 1; _speed = 1; break;
+                case 2: _enemyCount = 8; _rowCount = 2; _speed = 2; break;
+                case 3: _enemyCount = 12; _rowCount = 3; _speed = 2; break;
+                case 4: _enemyCount = 16; _rowCount = 4; _speed = 3; break;
+                case 5: _enemyCount = 20; _rowCount = 5; _speed = 3; break;
+                default: _enemyCount = 4; _rowCount = 1; _speed = 1; break;
             }
             enemies = new List<Enemy>();
             SpawnEnemies(_enemyCount, _rowCount);
 
 
         }
+        // Spawing the enemies
         public void SpawnEnemies(int enemyCount, int rowCount)
         {
             int spacingX = 10;
@@ -63,7 +59,7 @@ namespace iteration1
             int enemyHeight = Properties.Resources.enemyPng.Height;
 
 
-            int enemiesPerRow = Math.Min(enemyCount, screenWidth / (enemyWidth + spacingX));
+            int enemiesPerRow = 6;
             int totalRowWidth = enemiesPerRow * enemyWidth + (enemiesPerRow - 1) * spacingX;
             int startX = (screenWidth - totalRowWidth) / 2;
             int startY = 50;
@@ -77,10 +73,44 @@ namespace iteration1
                     int x = startX + col * (enemyWidth + spacingX);
                     int y = startY + row * (enemyHeight + spacingY);
 
-                    Enemy enemy = new Enemy(Properties.Resources.enemyPng, x, y, enemyWidth);
+                    Enemy enemy = new Enemy(Properties.Resources.enemyPng, x, y, 50, _speed);
                     enemies.Add(enemy);
                     spawned++;
                 }
+            }
+        }
+
+        // Updating the positions.
+        public void Update()
+        {
+            bool hittingEdge = false;
+
+            foreach (var enemy in enemies)
+            {
+                enemy.PositionX += (int)_moveDirection * _speed;
+                if( enemy.PositionX <= 0 || enemy.PositionX + enemy.SpriteImage.Width >= _screenWidth)
+                {
+                    hittingEdge = true;
+                }
+            }
+            if (hittingEdge)
+            {
+                _moveDirection = _moveDirection == Direction.Right ? Direction.Left : Direction.Right;
+
+                foreach (var enemy in enemies)
+                {
+                    enemy.PositionY += _stepDown;
+                }
+            }
+            enemies.RemoveAll(e => !e.IsAlive);
+        }
+
+        // Drawing to the screen
+        public void Draw(Graphics g)
+        {
+            foreach (var enemy in enemies)
+            {
+                enemy.Draw(g);
             }
         }
     }      

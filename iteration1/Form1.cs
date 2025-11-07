@@ -33,9 +33,7 @@ namespace iteration1
         private const int FireDelay = 200;
 
         // Enemy Variables
-        private List<Enemy> _enemies = [];
-        private List<Enemy> _deadEnemies = [];
-        private Enemy _enemy;
+        
 
         // User Interface Variables
         private Label _scoreLabel = new();
@@ -174,13 +172,7 @@ namespace iteration1
             }
 
             // Draw Enemies
-            if (currentWave != null)
-            {
-                foreach (Enemy enemy in currentWave.enemies)
-                {
-                    e.Graphics.DrawImage(enemy.SpriteImage, enemy.PositionX, enemy.PositionY, 50, 50);
-                }
-            }
+            currentWave?.Draw(e.Graphics);
 
 
 
@@ -203,44 +195,37 @@ namespace iteration1
 
 
             // Collision Checking
-            foreach(Bullet bullet in _bullets)
-            {
-                foreach(Enemy enemy in _enemies)
-                {
-                    if (bullet.HitBox.IntersectsWith(enemy.HitBox))
-                    {
-                        _scoreCount = (_scoreCount + ((600 - enemy.PositionY)/2)); 
-                        enemy.TakeDamage(BulletDamage);
-                        _disposedBullets.Add(bullet);
-                        break;
-                    }
-                }
-            }
+            
 
             // Remove Bullets
             foreach (Bullet bullet in _disposedBullets) _bullets.Remove(bullet);
             _disposedBullets.Clear();
 
             // Update Enemies
-            for (int i = _enemies.Count - 1; i >= 0; i--)
-            {
-                Enemy enemy = _enemies[i];
+            
+            if (currentWave != null){
+                currentWave.Update();
 
-                if (enemy.HitBox.IntersectsWith(_player.HitBox))
+                foreach (var bullet in _bullets)
                 {
-                    enemy.TakeDamage(999999);
-                    _playerLivesLeft -= 1;
-                    if (_playerLivesLeft <= 0 && !_isGameOver)
+                    foreach(var enemy in currentWave.enemies.ToList())
                     {
-                        _isGameOver = true;
-                        GameOver();
+                        if (bullet.HitBox.IntersectsWith(enemy.HitBox))
+                        {
+                            enemy.TakeDamage(BulletDamage);
+                            _disposedBullets.Add(bullet);
+                            _scoreCount += 10;
+                            break;
+                        }
                     }
                 }
+                if (currentWave.enemies.Count == 0)
+                {
+                    _currentWaveIndex++;
+                    StartWave(_currentWaveIndex);
+                }
 
-                enemy.Update();
             }
-            _enemies.RemoveAll(e => e.IsDead);
-
 
             // Background Change
             if ((DateTime.Now - _lastBackgroundChange).TotalMilliseconds >= BackgroundChangeDelay)

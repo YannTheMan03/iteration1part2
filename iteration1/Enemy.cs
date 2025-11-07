@@ -1,42 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using iteration1;
 
-namespace iteration1
+public class Enemy : Entity
 {
-    /// <summary>
-    /// Enemy class, derived from entity class to created instances of enemies in my project.
-    /// </summary>
-    public class Enemy : Entity
+    public int Health { get; set; }
+    public int Speed { get; set; }
+    public bool IsAlive => Health > 0;
+
+    public Enemy(Bitmap spriteImage, int x, int y, int health, int speed)
+        : base(spriteImage, x, y)
     {
-        private int EnemyHealth;
-        private int _speedY = 1;
-
-        public Enemy(Bitmap spriteImage, int positionX, int positionY, int enemyHealth) 
-            : base(spriteImage, positionX, positionY)
-        {
-            EnemyHealth = enemyHealth;
-        }
-        // Work on this.
-        public bool IsDead
-        {
-            get { return EnemyHealth <= 0; }
-        }
-        public void Update()
-        {
-            PositionY += _speedY;
-            
-        }
-        public void TakeDamage(int bullet_Damage)
-        {
-            EnemyHealth -= bullet_Damage;
-            if (EnemyHealth <= 0)
-            {
-                EnemyHealth = 0;
-            }
-        }
-
+        Health = health;
+        Speed = speed;
     }
+
+    public void Move() { PositionY += Speed; }
+
+    public void TakeDamage(int damage)
+    {
+        Health -= damage;
+        if (Health < 0) Health = 0;
+    }
+
+    public void Draw(Graphics g) { g.DrawImage(SpriteImage, PositionX, PositionY); }
 }
