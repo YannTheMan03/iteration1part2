@@ -271,15 +271,11 @@ namespace iteration1
             this.Close();
         }
 
-
         // Working on waves
         private void StartWave(int _currentWaveIndex)
         {
             currentWave = new Wave(_currentWaveIndex);
             this.Invalidate();
-        }
-        
-        
-
+        }               
     }
 }
