@@ -16,6 +16,7 @@ namespace iteration1
         // Game State Variables
         private bool _isGameOver = false;
         private int _scoreCount = 0;
+        private int _gcCount = 0;
 
         // Player Variables
         private Player _player;
@@ -32,9 +33,7 @@ namespace iteration1
         private const int FireDelay = 200;
 
         // Enemy Variables
-        private List<Enemy> _enemies = [];
-        private List<Enemy> _deadEnemies = [];
-        private Enemy _enemy;
+        
 
         // User Interface Variables
         private Label _scoreLabel = new();
@@ -51,10 +50,9 @@ namespace iteration1
             = "C:\\Users\\yb.2415248\\OneDrive - Hereford Sixth Form College\\Computer Science\\C03 - Project\\Assets\\leaderboard.json";
 
         // Wave Variables
-        private Wave _currentWave;
-        private const int SpawnDelay = 200;
-        private DateTime _lastSpawnTime = DateTime.MinValue;
-        private int _gcCount = 0;
+        private Wave currentWave;
+        private int _currentWaveIndex = 1;
+
 
         // Flags
         private bool _isMovingLeft;
@@ -67,6 +65,7 @@ namespace iteration1
         {
             InitializeComponent();
             ChangeBackground();
+            StartWave(_currentWaveIndex);
         }
 
         // Change Background Image
@@ -74,10 +73,15 @@ namespace iteration1
         {
             _background = new Image[]
             {
-                Properties.Resources.backGround1,
-                Properties.Resources.backGround2,
-                Properties.Resources.backGround3,
-                Properties.Resources.backGround4
+                Properties.Resources.BG1,
+                Properties.Resources.BG2,
+                Properties.Resources.BG3,
+                Properties.Resources.BG4,
+                Properties.Resources.BG5,
+                Properties.Resources.BG6,
+                Properties.Resources.BG7,
+                Properties.Resources.BG8
+
             };
 
             this.BackgroundImage = _background[0];
@@ -88,7 +92,7 @@ namespace iteration1
         {
             // Formatting Screen
             this.Size = new System.Drawing.Size(400, 600);
-            this.MaximizeBox = false;
+            this.MaximizeBox = true;
             this.MinimizeBox = false;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.DoubleBuffered = true;
@@ -172,8 +176,19 @@ namespace iteration1
                 _disposedBullets.Clear();
             }
 
-
+            // Draw Enemies
+            foreach (var enemy in currentWave.enemies.ToList())
+            {
+                if ((enemy.HitBox.IntersectsWith(_player.HitBox))||(enemy.PositionY >550))
+                {
+                    currentWave.enemies.Remove(enemy);
+                    _playerLivesLeft -= 1;
+                }
+                currentWave?.Draw(G);
+            }
             
+ 
+
 
         }
         
@@ -192,20 +207,11 @@ namespace iteration1
             // Update bullet positions
             foreach (Bullet bullet in _bullets) bullet.PositionY += BulletVelocity;
 
-
-            // Collision Checking
-            foreach(Bullet bullet in _bullets)
+            // End game
+            if ((_playerLivesLeft <= 0 )||( _currentWaveIndex == 6))
             {
-                foreach(Enemy enemy in _enemies)
-                {
-                    if (bullet.HitBox.IntersectsWith(enemy.HitBox))
-                    {
-                        _scoreCount = (_scoreCount + ((600 - enemy.PositionY)/2)); 
-                        enemy.TakeDamage(BulletDamage);
-                        _disposedBullets.Add(bullet);
-                        break;
-                    }
-                }
+                game_Timer.Stop(); 
+                GameOver();
             }
 
             // Remove Bullets
@@ -213,25 +219,42 @@ namespace iteration1
             _disposedBullets.Clear();
 
             // Update Enemies
-            for (int i = _enemies.Count - 1; i >= 0; i--)
-            {
-                Enemy enemy = _enemies[i];
-
-                if (enemy.HitBox.IntersectsWith(_player.HitBox))
+            
+            if (currentWave != null){
+                currentWave.Update();
+                foreach (var bullet in _bullets.ToList())
                 {
-                    enemy.TakeDamage(999999);
-                    _playerLivesLeft -= 1;
-                    if (_playerLivesLeft <= 0 && !_isGameOver)
+                    foreach (var enemy in currentWave.enemies.ToList())
                     {
-                        _isGameOver = true;
-                        GameOver();
+                        if (bullet.HitBox.IntersectsWith(enemy.HitBox))
+                        {
+                            enemy.TakeDamage(BulletDamage);
+                            _bullets.Remove(bullet);
+                            _scoreCount += 10;
+                            break;
+                        }
                     }
                 }
+                foreach (var enemyBullet in currentWave.EnemyBullets.ToList())
+                {
+                    enemyBullet.PositionY += 2; 
 
-                enemy.Update();
+                    if (enemyBullet.HitBox.IntersectsWith(_player.HitBox))
+                    {
+                        _playerLivesLeft--;
+                        currentWave.EnemyBullets.Remove(enemyBullet);
+                    }
+                    else if (enemyBullet.PositionY > _formBounds.Height)
+                    {
+                        currentWave.EnemyBullets.Remove(enemyBullet);
+                    }
+                }
+                if (currentWave.enemies.Count == 0)
+                {
+                    _currentWaveIndex++;
+                    StartWave(_currentWaveIndex);
+                }
             }
-            _enemies.RemoveAll(e => e.IsDead);
-
 
             // Background Change
             if ((DateTime.Now - _lastBackgroundChange).TotalMilliseconds >= BackgroundChangeDelay)
@@ -261,5 +284,12 @@ namespace iteration1
             game_Timer.Stop();
             this.Close();
         }
+
+        // Working on waves
+        private void StartWave(int _currentWaveIndex)
+        {
+            currentWave = new Wave(_currentWaveIndex);
+            this.Invalidate();
+        }               
     }
 }
