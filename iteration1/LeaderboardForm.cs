@@ -12,6 +12,7 @@ namespace iteration1
 {
     public partial class LeaderboardForm : Form
     {
+        public string Username { get; private set; }
         public LeaderboardForm()
         {
             InitializeComponent();
@@ -19,8 +20,20 @@ namespace iteration1
 
         private void LeaderboardForm_Load(object sender, EventArgs e)
         {
-            this.Height = 60;
-            this.Width = 40;
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textBox1.Text))
+            {
+                MessageBox.Show("Please Enter a username First");
+                return;
+            }
+
+            Username = textBox1.Text;
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
     }
 }
