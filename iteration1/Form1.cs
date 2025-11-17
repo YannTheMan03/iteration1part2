@@ -294,7 +294,6 @@ namespace iteration1
 
             MessageBox.Show(message, "Game Over");
             
-            Thread.Sleep(1000);
             game_Timer.Stop();
             this.Close();
         }
